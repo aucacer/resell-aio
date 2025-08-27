@@ -1,0 +1,5 @@
+project_id = "tofckkpzdbcplxkgxcsr"
+
+# Disable JWT verification for Stripe webhooks - allows Stripe to call the webhook without authentication
+[functions.stripe-webhook-public]
+verify_jwt = false

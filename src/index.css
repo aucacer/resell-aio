@@ -1,0 +1,252 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Reseller Inventory App Design System - Dark Theme with Blue Accents
+Inspired by modern financial dashboards for professional inventory management
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Dark theme base colors */
+    --background: 220 13% 8%;
+    --foreground: 210 11% 96%;
+
+    /* Card colors for dashboard widgets */
+    --card: 220 13% 10%;
+    --card-foreground: 210 11% 96%;
+
+    /* Popover colors */
+    --popover: 220 13% 10%;
+    --popover-foreground: 210 11% 96%;
+
+    /* Primary blue accent - inspired by Scout app */
+    --primary: 217 91% 60%;
+    --primary-foreground: 210 11% 96%;
+    --primary-glow: 217 91% 70%;
+
+    /* Secondary grays for subtle elements */
+    --secondary: 220 13% 14%;
+    --secondary-foreground: 210 11% 96%;
+
+    /* Muted colors for less important content */
+    --muted: 220 13% 14%;
+    --muted-foreground: 215 16% 65%;
+
+    /* Accent colors for highlights */
+    --accent: 220 13% 14%;
+    --accent-foreground: 217 91% 60%;
+
+    /* Success green for profits */
+    --success: 142 76% 36%;
+    --success-foreground: 210 11% 96%;
+    --success-glow: 142 76% 46%;
+
+    /* Destructive red for losses/danger */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 11% 96%;
+
+    /* Warning orange for alerts */
+    --warning: 38 92% 50%;
+    --warning-foreground: 220 13% 8%;
+
+    /* Border and input colors */
+    --border: 220 13% 18%;
+    --input: 220 13% 18%;
+    --ring: 217 91% 60%;
+
+    /* Gradients for modern look */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 70%));
+    --gradient-success: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 46%));
+    --gradient-card: linear-gradient(135deg, hsl(220 13% 10%), hsl(220 13% 12%));
+    
+    /* Shadows with blue glow effects */
+    --shadow-primary: 0 10px 30px -10px hsl(217 91% 60% / 0.3);
+    --shadow-success: 0 10px 30px -10px hsl(142 76% 36% / 0.3);
+    --shadow-card: 0 4px 12px hsl(220 13% 4% / 0.5);
+    
+    /* Smooth transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 220 13% 10%;
+
+    --sidebar-foreground: 210 11% 96%;
+
+    --sidebar-primary: 217 91% 60%;
+
+    --sidebar-primary-foreground: 210 11% 96%;
+
+    --sidebar-accent: 220 13% 14%;
+
+    --sidebar-accent-foreground: 210 11% 96%;
+
+    --sidebar-border: 220 13% 18%;
+
+    --sidebar-ring: 217 91% 60%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Landing Page Specific Styles */
+  .hero-gradient {
+    background: linear-gradient(135deg, hsl(217 91% 60% / 0.1), hsl(142 76% 50% / 0.1));
+  }
+
+  .btn-gradient {
+    background: linear-gradient(135deg, hsl(217 91% 60%), hsl(142 76% 50%));
+    @apply shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105;
+  }
+
+  .btn-gradient:hover {
+    box-shadow: 0 0 40px hsl(217 91% 60% / 0.3);
+  }
+
+  .feature-card {
+    @apply bg-card border border-border rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1;
+    box-shadow: 0 2px 8px hsl(0 0% 0% / 0.2);
+  }
+
+  .feature-card:hover {
+    box-shadow: 0 4px 16px hsl(0 0% 0% / 0.3);
+  }
+
+  .pricing-card {
+    @apply bg-card border border-border rounded-2xl p-8 shadow-sm hover:shadow-lg transition-all duration-300;
+    box-shadow: 0 2px 8px hsl(0 0% 0% / 0.2);
+  }
+
+  .pricing-card-featured {
+    @apply bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20;
+    box-shadow: 0 0 40px hsl(217 91% 60% / 0.3);
+  }
+
+  .animate-fade-up {
+    animation: fadeUp 0.6s ease-out;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.8s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.8s ease-out;
+  }
+}
+
+@layer utilities {
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, hsl(217 91% 60%), hsl(142 76% 50%));
+  }
+
+  .bg-gradient-hero {
+    background: linear-gradient(135deg, hsl(217 91% 60% / 0.1), hsl(142 76% 50% / 0.1));
+  }
+
+  .text-gradient {
+    @apply inline-block;
+    background: linear-gradient(135deg, hsl(217 91% 60%), hsl(142 76% 50%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-grid-pattern {
+    background-image: radial-gradient(circle at 1px 1px, hsl(220 13% 18%) 1px, transparent 0);
+    background-size: 20px 20px;
+  }
+
+  .shadow-soft {
+    box-shadow: 0 2px 8px hsl(0 0% 0% / 0.2);
+  }
+
+  .shadow-medium {
+    box-shadow: 0 4px 16px hsl(0 0% 0% / 0.3);
+  }
+
+  .shadow-large {
+    box-shadow: 0 8px 32px hsl(0 0% 0% / 0.4);
+  }
+}
+
+/* Keyframe Animations */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

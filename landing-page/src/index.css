@@ -1,0 +1,200 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ResellAIO Design System - Dark Professional Theme
+All colors MUST be HSL format for consistency.
+*/
+
+@layer base {
+  :root {
+    /* Core Background & Text - Dark Theme */
+    --background: 222 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    /* Card Components - Dark */
+    --card: 224 71% 8%;
+    --card-foreground: 210 40% 98%;
+
+    /* Popover Components - Dark */
+    --popover: 224 71% 8%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Primary Brand Colors - Bright Blue */
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 84% 4.9%;
+    --primary-hover: 217 91% 65%;
+
+    /* Secondary Colors - Dark Blue */
+    --secondary: 217 32% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    /* Muted Colors - Dark */
+    --muted: 217 32% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    /* Accent Colors - Green (matching dashboard) */
+    --accent: 142 76% 50%;
+    --accent-foreground: 222 84% 4.9%;
+
+    /* Status Colors */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --success: 142 76% 50%;
+    --success-foreground: 222 84% 4.9%;
+
+    /* UI Elements - Dark */
+    --border: 217 32% 17%;
+    --input: 217 32% 17%;
+    --ring: 217 91% 60%;
+
+    /* Design System Extensions - Dark Theme */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(142 76% 50%));
+    --gradient-secondary: linear-gradient(135deg, hsl(224 71% 8%), hsl(217 32% 17%));
+    --gradient-hero: linear-gradient(135deg, hsl(217 91% 60% / 0.1), hsl(142 76% 50% / 0.1));
+    
+    /* Shadows - Dark Theme */
+    --shadow-soft: 0 2px 8px hsl(0 0% 0% / 0.2);
+    --shadow-medium: 0 4px 16px hsl(0 0% 0% / 0.3);
+    --shadow-large: 0 8px 32px hsl(0 0% 0% / 0.4);
+    --shadow-glow: 0 0 40px hsl(217 91% 60% / 0.3);
+
+    /* Spacing & Layout */
+    --radius: 0.75rem;
+
+    /* Sidebar - Dark Theme */
+    --sidebar-background: 224 71% 8%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 222 84% 4.9%;
+    --sidebar-accent: 217 32% 17%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 32% 17%;
+    --sidebar-ring: 217 91% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+@layer components {
+  /* Hero Section Styles */
+  .hero-gradient {
+    background: var(--gradient-hero);
+  }
+
+  /* Button Variants */
+  .btn-gradient {
+    background: var(--gradient-primary);
+    @apply shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105;
+  }
+
+  .btn-gradient:hover {
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* Feature Cards */
+  .feature-card {
+    @apply bg-card border border-border rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .feature-card:hover {
+    box-shadow: var(--shadow-medium);
+  }
+
+  /* Pricing Cards */
+  .pricing-card {
+    @apply bg-card border border-border rounded-2xl p-8 shadow-sm hover:shadow-lg transition-all duration-300;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .pricing-card-featured {
+    @apply bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20;
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* Animation Classes */
+  .animate-fade-up {
+    animation: fadeUp 0.6s ease-out;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.8s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.8s ease-out;
+  }
+}
+
+@layer utilities {
+  /* Custom Gradients */
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .bg-gradient-secondary {
+    background: var(--gradient-secondary);
+  }
+
+  .bg-gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  /* Custom Shadows */
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-medium {
+    box-shadow: var(--shadow-medium);
+  }
+
+  .shadow-large {
+    box-shadow: var(--shadow-large);
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+}
+
+/* Keyframe Animations */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
