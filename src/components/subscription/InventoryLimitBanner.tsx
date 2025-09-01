@@ -65,7 +65,7 @@ export function InventoryLimitBanner({ currentCount }: InventoryLimitBannerProps
           </div>
 
           <Button
-            onClick={() => navigate('/payment-required')}
+            onClick={() => navigate('/settings')}
             size="sm"
             className="ml-4"
           >

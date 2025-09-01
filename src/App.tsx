@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { UserSettingsProvider } from "@/contexts/UserSettingsContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
+import { EnhancedSubscriptionProvider } from "@/components/subscription/EnhancedSubscriptionProvider";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { SubscriptionGuard } from "@/components/subscription/SubscriptionGuard";
 import Landing from "./pages/Landing";
@@ -17,7 +18,6 @@ import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import EmailConfirmation from "./pages/EmailConfirmation";
 import NotFound from "./pages/NotFound";
-import PaymentRequired from "./pages/PaymentRequired";
 
 const queryClient = new QueryClient();
 
@@ -58,26 +58,27 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <SubscriptionProvider>
-        <UserSettingsProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
-                <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
-                <Route path="/auth/confirm" element={<EmailConfirmation />} />
-                <Route path="/payment-required" element={<PaymentRequired />} />
-                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
-                <Route path="/sales" element={<ProtectedRoute><Sales /></ProtectedRoute>} />
-                <Route path="/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
-                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </UserSettingsProvider>
+        <EnhancedSubscriptionProvider>
+          <UserSettingsProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
+                  <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
+                  <Route path="/auth/confirm" element={<EmailConfirmation />} />
+                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                  <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
+                  <Route path="/sales" element={<ProtectedRoute><Sales /></ProtectedRoute>} />
+                  <Route path="/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
+                  <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </UserSettingsProvider>
+        </EnhancedSubscriptionProvider>
       </SubscriptionProvider>
     </AuthProvider>
   </QueryClientProvider>

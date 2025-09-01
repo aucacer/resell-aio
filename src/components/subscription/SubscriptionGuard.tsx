@@ -1,21 +1,15 @@
 import { ReactNode } from 'react';
-import { useSubscriptionContext } from '@/contexts/SubscriptionContext';
-import { Navigate } from 'react-router-dom';
+import { useEnhancedSubscriptionContext } from './EnhancedSubscriptionProvider';
 
 interface SubscriptionGuardProps {
   children: ReactNode;
-  fallbackPath?: string;
-  requiresAccess?: boolean;
 }
 
-export function SubscriptionGuard({ 
-  children, 
-  fallbackPath = '/payment-required',
-  requiresAccess = true 
-}: SubscriptionGuardProps) {
-  const { hasAccess, loading } = useSubscriptionContext();
+export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
+  const { loading, error, initialLoadComplete, hasSyncIssues, requiresAttention } = useEnhancedSubscriptionContext();
 
-  if (loading) {
+  // Show loading spinner during initial load
+  if (loading || !initialLoadComplete) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -23,9 +17,12 @@ export function SubscriptionGuard({
     );
   }
 
-  if (requiresAccess && !hasAccess) {
-    return <Navigate to={fallbackPath} replace />;
+  // If there's an error loading subscription data, allow access to prevent being locked out
+  if (error) {
+    console.warn('Subscription guard: Error loading subscription data, allowing access:', error);
+    return <>{children}</>;
   }
 
+  // Always allow access - subscription management is handled within the app via Settings page
   return <>{children}</>;
 }

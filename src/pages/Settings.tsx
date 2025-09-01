@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
+import { useSearchParams } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -26,13 +27,16 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
-import { Download, Settings2, DollarSign, CalendarIcon, MapPin, Trash2 } from "lucide-react"
+import { Download, Settings2, DollarSign, CalendarIcon, MapPin, Trash2, RefreshCw } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
+import { formatDateByLocationCode } from "@/lib/dateUtils"
 import { useSettings } from "@/contexts/UserSettingsContext"
+import { useAuth } from "@/contexts/AuthContext"
+import { useSubscriptionContext } from "@/contexts/SubscriptionContext"
 import { SubscriptionCheckout } from "@/components/subscription/SubscriptionCheckout"
 
 const CURRENCIES = [
@@ -57,6 +61,7 @@ const LOCATIONS = [
 export default function Settings() {
   const [selectedExports, setSelectedExports] = useState<string[]>([])
   const [isExporting, setIsExporting] = useState(false)
+  // Removed hasInitialSyncRun since we removed auto-sync
   const { currency, location, updateCurrency, updateLocation, isLoading: settingsLoading } = useSettings()
   const [tempCurrency, setTempCurrency] = useState(currency)
   const [tempLocation, setTempLocation] = useState(location)
@@ -66,14 +71,134 @@ export default function Settings() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [isTerminating, setIsTerminating] = useState(false)
   const [confirmText, setConfirmText] = useState("")
+  const [isRefreshingSubscription, setIsRefreshingSubscription] = useState(false)
   const { toast } = useToast()
   const isMobile = useIsMobile()
+  const { user } = useAuth()
+  const { refreshSubscription } = useSubscriptionContext()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  // Manual refresh function
+  const handleManualRefresh = useCallback(async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to refresh subscription status.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsRefreshingSubscription(true);
+
+    try {
+      console.log('🔄 Manual subscription refresh triggered...');
+      
+      const session = await supabase.auth.getSession();
+      if (!session.data.session?.access_token) {
+        throw new Error('No valid session token');
+      }
+      
+      const { data, error } = await supabase.functions.invoke('sync-subscription', {
+        headers: {
+          Authorization: `Bearer ${session.data.session.access_token}`,
+        },
+      });
+      
+      if (error) {
+        console.error('Manual sync failed:', error);
+        throw new Error(error.message || 'Sync failed');
+      }
+      
+      if (data?.success) {
+        console.log('✅ Manual sync successful:', data.data);
+        await refreshSubscription();
+        
+        const syncedData = data.data;
+        let message = "Subscription status refreshed successfully.";
+        let title = "Refresh Successful";
+        
+        if (syncedData?.cancel_at_period_end && syncedData?.status === 'active') {
+          const expiryDate = syncedData.current_period_end 
+            ? formatDateByLocationCode(syncedData.current_period_end, location)
+            : 'end of billing period';
+          title = "Subscription Cancelled ❌";
+          message = `Your ${syncedData.plan_id?.replace('_', ' ').toUpperCase()} subscription has been cancelled and will expire on ${expiryDate}. You'll continue to have access until then.`;
+        } else if (syncedData?.status === 'active' && !syncedData?.cancel_at_period_end) {
+          title = "Subscription Active ✅";
+          message = `Your ${syncedData.plan_id?.replace('_', ' ').toUpperCase()} subscription is active and will continue to renew automatically.`;
+        } else if (syncedData?.status === 'canceled') {
+          title = "Subscription Cancelled ❌";
+          message = "Your subscription has been cancelled and is no longer active.";
+        } else if (syncedData?.status === 'trialing' && syncedData?.plan_id === 'free_trial') {
+          const trialEnd = syncedData.current_period_end 
+            ? formatDateByLocationCode(syncedData.current_period_end, location)
+            : 'the trial period ends';
+          title = "Free Trial Active 🎯";
+          message = `You're on a free trial until ${trialEnd}. Upgrade anytime to continue with premium features.`;
+        } else if (syncedData?.status === 'trialing' && syncedData?.plan_id !== 'free_trial') {
+          // This is a paid plan in trial mode (unusual but possible)
+          const trialEnd = syncedData.current_period_end 
+            ? formatDateByLocationCode(syncedData.current_period_end, location)
+            : 'the trial ends';
+          title = "Subscription Trial 🎯";
+          message = `Your ${syncedData.plan_id?.replace('_', ' ').toUpperCase()} subscription is in trial mode until ${trialEnd}.`;
+        }
+        
+        toast({
+          title,
+          description: message,
+          duration: 8000,
+        });
+      } else {
+        throw new Error(data?.error || 'No data returned from sync');
+      }
+      
+    } catch (error: any) {
+      console.error('Manual refresh error:', error);
+      toast({
+        title: "Refresh Failed",
+        description: error.message || "Unable to refresh subscription status. Please try again.",
+        variant: "destructive",
+        duration: 8000,
+      });
+    } finally {
+      setIsRefreshingSubscription(false);
+    }
+  }, [user, toast, refreshSubscription])
 
   // Sync temp values when settings load or change
   useEffect(() => {
     setTempCurrency(currency)
     setTempLocation(location)
   }, [currency, location])
+
+  // Auto-sync when returning from Stripe portal
+  useEffect(() => {
+    const portalReturn = searchParams.get('portal_return');
+    
+    if (portalReturn === 'true' && user && !isRefreshingSubscription) {
+      console.log('🔄 Detected return from Stripe portal - auto-triggering sync...');
+      
+      // Clear the portal_return parameter from URL immediately
+      const newSearchParams = new URLSearchParams(searchParams.toString());
+      newSearchParams.delete('portal_return');
+      setSearchParams(newSearchParams, { replace: true });
+      
+      // Show immediate feedback
+      toast({
+        title: "Syncing subscription changes...",
+        description: "Updating your subscription status from the customer portal.",
+        duration: 3000,
+      });
+      
+      // Reduced delay - 2 seconds is sufficient for most webhook processing
+      setTimeout(() => {
+        console.log('🚀 Triggering sync after portal return...');
+        handleManualRefresh();
+      }, 2000);
+    }
+  }, [searchParams, user, isRefreshingSubscription, handleManualRefresh, setSearchParams, toast]);
 
   const exportOptions = [
     { id: "inventory", label: "Inventory", description: "All your inventory items with purchase details" },
@@ -832,13 +957,15 @@ export default function Settings() {
       {/* Subscription Management */}
       <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-card-foreground">
-            <DollarSign className="h-5 w-5 text-primary" />
-            Subscription & Billing
-          </CardTitle>
-          <CardDescription>
-            Manage your subscription, billing, and upgrade your plan
-          </CardDescription>
+          <div>
+            <CardTitle className="flex items-center gap-2 text-card-foreground">
+              <DollarSign className="h-5 w-5 text-primary" />
+              Subscription & Billing
+            </CardTitle>
+            <CardDescription>
+              Manage your subscription, billing, and upgrade your plan
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent>
           <SubscriptionCheckout />

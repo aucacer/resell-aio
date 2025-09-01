@@ -624,25 +624,7 @@ export default function Dashboard() {
       <div className="hidden sm:block space-y-4 lg:space-y-6">
         {/* Key Metrics Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-7 gap-3 lg:gap-6 mx-6 lg:mx-0">
-          {/* 1. Total Sales */}
-          <Card className="bg-gradient-card shadow-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs lg:text-sm font-medium text-foreground">
-                Total Sales YTD
-              </CardTitle>
-              <DollarSign className="h-3 w-3 lg:h-4 lg:w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-lg lg:text-2xl font-bold text-foreground">
-                ${metrics.totalSales.toLocaleString()}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Jan 1 - {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* 2. Monthly Sales */}
+          {/* 1. Monthly Sales */}
           <Card className="bg-gradient-card shadow-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs lg:text-sm font-medium text-foreground">
@@ -663,7 +645,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* 3. Monthly ROI */}
+          {/* 2. Monthly ROI */}
           <Card className="bg-gradient-card shadow-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs lg:text-sm font-medium text-foreground">
@@ -684,7 +666,25 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* 4. Total Profit */}
+          {/* 3. Total Sales YTD */}
+          <Card className="bg-gradient-card shadow-card border-border">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs lg:text-sm font-medium text-foreground">
+                Total Sales YTD
+              </CardTitle>
+              <DollarSign className="h-3 w-3 lg:h-4 lg:w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-lg lg:text-2xl font-bold text-foreground">
+                ${metrics.totalSales.toLocaleString()}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Jan 1 - {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* 4. Total Profit YTD */}
           <Card className="bg-gradient-card shadow-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs lg:text-sm font-medium text-foreground">
@@ -726,7 +726,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* 6. Net Profit */}
+          {/* 6. Net Profit YTD */}
           <Card className="bg-gradient-card shadow-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs lg:text-sm font-medium text-foreground">
@@ -769,171 +769,72 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Charts Grid - Side by side on desktop */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mx-6 lg:mx-0">
-          {/* Profit Chart */}
-          <Card className="bg-gradient-card shadow-card border-border">
-          <CardHeader className="space-y-3 pb-3 lg:pb-4 px-3 sm:px-4 lg:px-6">
-            <CardTitle className="text-base lg:text-lg text-foreground">Profit Overview</CardTitle>
-            
-            {/* Date Range Picker - Responsive */}
+        {/* Date Range Picker - Above both charts */}
+        <div className="mx-6 lg:mx-0 mb-4">
+          <div className="flex items-center gap-3">
+            <h3 className="text-lg font-semibold text-foreground">Analytics Overview</h3>
             <div className="flex items-center gap-2">
-            {isMobile ? (
-              <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-                <DrawerTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "justify-start text-left font-normal w-full",
-                      (!dateRange && !selectedPeriod) && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {isCustomDateRange && dateRange?.from && dateRange?.to 
-                      ? `${format(dateRange.from, "MMM d")} ~ ${format(dateRange.to, "MMM d, yyyy")}`
-                      : selectedPeriod === '1d' ? 'Last 1 Day' :
-                        selectedPeriod === '1w' ? 'Last 1 Week' : 
-                        selectedPeriod === '1m' ? 'Last 1 Month' : 
-                        selectedPeriod === '3m' ? 'Last 3 Months' : 
-                        selectedPeriod === '6m' ? 'Last 6 Months' : 
-                        selectedPeriod === 'ytd' ? 'Year to Date' :
-                        selectedPeriod === 'lastyear' ? 'Last Year' : 'Select period'
-                    }
-                  </Button>
-                </DrawerTrigger>
-                <DrawerContent className="max-h-[90vh]">
-                  <DrawerHeader>
-                    <DrawerTitle>Select Date Range</DrawerTitle>
-                  </DrawerHeader>
-                  
-                  <div className="px-4 pb-4 space-y-6 overflow-y-auto">
-                    {/* Preset Options - Mobile First */}
-                    <div className="space-y-3">
-                      <h4 className="text-sm font-medium text-muted-foreground">Quick Presets</h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        {(['1d', '1w', '1m', '3m', '6m', 'ytd', 'lastyear'] as TimePeriod[]).map((period) => (
-                          <Button
-                            key={period}
-                            variant={!isCustomDateRange && selectedPreset === period ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => {
-                              setSelectedPreset(period)
-                              setIsCustomDateRange(false)
-                              setTempDateRange(undefined)
-                              setDateRange(undefined)
-                            }}
-                            className="h-12 text-center"
-                          >
-                            {period === '1d' ? '1 Day' :
-                             period === '1w' ? '1 Week' : 
-                             period === '1m' ? '1 Month' : 
-                             period === '3m' ? '3 Months' : 
-                             period === '6m' ? '6 Months' : 
-                             period === 'ytd' ? 'Year to Date' :
-                             period === 'lastyear' ? 'Last Year' : period}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Custom Date Range */}
-                    <div className="space-y-3 border-t border-border pt-4">
-                      <h4 className="text-sm font-medium text-muted-foreground">Custom Date Range</h4>
-                      <Calendar
-                        mode="range"
-                        selected={tempDateRange}
-                        onSelect={(range) => {
-                          setTempDateRange(range)
-                          if (range?.from || range?.to) {
-                            setIsCustomDateRange(true)
-                          }
-                        }}
-                        numberOfMonths={1}
-                        className={cn("w-full pointer-events-auto")}
-                      />
-                    </div>
-                  </div>
-
-                  <DrawerFooter className="px-4 pb-6">
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => {
-                          if (tempDateRange?.from && tempDateRange?.to) {
-                            // Apply custom date range
-                            setDateRange(tempDateRange)
-                            setIsCustomDateRange(true)
-                          } else if (selectedPreset !== selectedPeriod) {
-                            // Apply preset selection
-                            setSelectedPeriod(selectedPreset)
-                            setIsCustomDateRange(false)
-                            setDateRange(undefined)
-                            setTempDateRange(undefined)
-                          }
-                          setIsDrawerOpen(false)
-                        }}
-                        disabled={!((tempDateRange?.from && tempDateRange?.to) || (selectedPreset !== selectedPeriod))}
-                        className="flex-1"
-                      >
-                        Apply
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setTempDateRange(undefined)
-                          setIsDrawerOpen(false)
-                        }}
-                        className="flex-1"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
+              {isMobile ? (
+                <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+                  <DrawerTrigger asChild>
                     <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setDateRange(undefined)
-                        setTempDateRange(undefined)
-                        setIsCustomDateRange(false)
-                        setSelectedPeriod('ytd')
-                        setSelectedPreset('ytd')
-                        setIsDrawerOpen(false)
-                      }}
-                      className="text-destructive"
+                      variant="outline"
+                      className={cn(
+                        "justify-start text-left font-normal",
+                        (!dateRange && !selectedPeriod) && "text-muted-foreground"
+                      )}
                     >
-                      Clear selection
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {isCustomDateRange && dateRange?.from && dateRange?.to 
+                        ? `${format(dateRange.from, "MMM d")} ~ ${format(dateRange.to, "MMM d, yyyy")}`
+                        : selectedPeriod === '1d' ? 'Last 1 Day' :
+                          selectedPeriod === '1w' ? 'Last 1 Week' : 
+                          selectedPeriod === '1m' ? 'Last 1 Month' : 
+                          selectedPeriod === '3m' ? 'Last 3 Months' : 
+                          selectedPeriod === '6m' ? 'Last 6 Months' : 
+                          selectedPeriod === 'ytd' ? 'Year to Date' :
+                          selectedPeriod === 'lastyear' ? 'Last Year' : 'Select period'
+                      }
                     </Button>
-                  </DrawerFooter>
-                </DrawerContent>
-              </Drawer>
-            ) : (
-              <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "justify-start text-left font-normal min-w-[200px]",
-                      (!dateRange && !selectedPeriod) && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {isCustomDateRange && dateRange?.from && dateRange?.to 
-                      ? `${format(dateRange.from, "MMM d")} ~ ${format(dateRange.to, "MMM d, yyyy")}`
-                      : selectedPeriod === '1d' ? 'Last 1 Day' :
-                        selectedPeriod === '1w' ? 'Last 1 Week' : 
-                        selectedPeriod === '1m' ? 'Last 1 Month' : 
-                        selectedPeriod === '3m' ? 'Last 3 Months' : 
-                        selectedPeriod === '6m' ? 'Last 6 Months' : 
-                        selectedPeriod === 'ytd' ? 'Year to Date' :
-                        selectedPeriod === 'lastyear' ? 'Last Year' : 'Select period'
-                    }
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <div className="flex">
-                    {/* Calendar Section */}
-                    <div className="border-r border-border p-4">
-                      <div className="space-y-2">
-                        <label className="text-xs font-medium text-muted-foreground">SELECT DATE RANGE</label>
+                  </DrawerTrigger>
+                  <DrawerContent className="max-h-[90vh]">
+                    <DrawerHeader>
+                      <DrawerTitle>Select Date Range</DrawerTitle>
+                    </DrawerHeader>
+                    
+                    <div className="px-4 pb-4 space-y-6 overflow-y-auto">
+                      {/* Preset Options - Mobile First */}
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-medium text-muted-foreground">Quick Presets</h4>
+                        <div className="grid grid-cols-2 gap-2">
+                          {(['1d', '1w', '1m', '3m', '6m', 'ytd', 'lastyear'] as TimePeriod[]).map((period) => (
+                            <Button
+                              key={period}
+                              variant={!isCustomDateRange && selectedPreset === period ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => {
+                                setSelectedPreset(period)
+                                setIsCustomDateRange(false)
+                                setTempDateRange(undefined)
+                                setDateRange(undefined)
+                              }}
+                              className="h-12 text-center"
+                            >
+                              {period === '1d' ? '1 Day' :
+                               period === '1w' ? '1 Week' : 
+                               period === '1m' ? '1 Month' : 
+                               period === '3m' ? '3 Months' : 
+                               period === '6m' ? '6 Months' : 
+                               period === 'ytd' ? 'Year to Date' :
+                               period === 'lastyear' ? 'Last Year' : period}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Custom Date Range */}
+                      <div className="space-y-3 border-t border-border pt-4">
+                        <h4 className="text-sm font-medium text-muted-foreground">Custom Date Range</h4>
                         <Calendar
                           mode="range"
                           selected={tempDateRange}
@@ -943,15 +844,15 @@ export default function Dashboard() {
                               setIsCustomDateRange(true)
                             }
                           }}
-                          numberOfMonths={2}
-                          className={cn("p-0 pointer-events-auto")}
+                          numberOfMonths={1}
+                          className={cn("w-full pointer-events-auto")}
                         />
                       </div>
-                      
-                      {/* OK and Cancel buttons */}
-                      <div className="flex gap-2 mt-4 pt-4 border-t border-border">
+                    </div>
+
+                    <DrawerFooter className="px-4 pb-6">
+                      <div className="flex gap-2">
                         <Button
-                          size="sm"
                           onClick={() => {
                             if (tempDateRange?.from && tempDateRange?.to) {
                               // Apply custom date range
@@ -964,79 +865,183 @@ export default function Dashboard() {
                               setDateRange(undefined)
                               setTempDateRange(undefined)
                             }
-                            setIsPopoverOpen(false)
+                            setIsDrawerOpen(false)
                           }}
                           disabled={!((tempDateRange?.from && tempDateRange?.to) || (selectedPreset !== selectedPeriod))}
                           className="flex-1"
                         >
-                          OK
+                          Apply
                         </Button>
                         <Button
                           variant="outline"
-                          size="sm"
                           onClick={() => {
                             setTempDateRange(undefined)
+                            setIsDrawerOpen(false)
                           }}
                           className="flex-1"
                         >
                           Cancel
                         </Button>
                       </div>
-                    </div>
-                    
-                    {/* Preset Options */}
-                    <div className="w-48 p-4 space-y-2">
-                      <div className="space-y-1">
-                        {(['1d', '1w', '1m', '3m', '6m', 'ytd', 'lastyear'] as TimePeriod[]).map((period) => (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setDateRange(undefined)
+                          setTempDateRange(undefined)
+                          setIsCustomDateRange(false)
+                          setSelectedPeriod('ytd')
+                          setSelectedPreset('ytd')
+                          setIsDrawerOpen(false)
+                        }}
+                        className="text-destructive"
+                      >
+                        Clear selection
+                      </Button>
+                    </DrawerFooter>
+                  </DrawerContent>
+                </Drawer>
+              ) : (
+                <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "justify-start text-left font-normal min-w-[200px]",
+                        (!dateRange && !selectedPeriod) && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {isCustomDateRange && dateRange?.from && dateRange?.to 
+                        ? `${format(dateRange.from, "MMM d")} ~ ${format(dateRange.to, "MMM d, yyyy")}`
+                        : selectedPeriod === '1d' ? 'Last 1 Day' :
+                          selectedPeriod === '1w' ? 'Last 1 Week' : 
+                          selectedPeriod === '1m' ? 'Last 1 Month' : 
+                          selectedPeriod === '3m' ? 'Last 3 Months' : 
+                          selectedPeriod === '6m' ? 'Last 6 Months' : 
+                          selectedPeriod === 'ytd' ? 'Year to Date' :
+                          selectedPeriod === 'lastyear' ? 'Last Year' : 'Select period'
+                      }
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <div className="flex">
+                      {/* Calendar Section */}
+                      <div className="border-r border-border p-4">
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium text-muted-foreground">SELECT DATE RANGE</label>
+                          <Calendar
+                            mode="range"
+                            selected={tempDateRange}
+                            onSelect={(range) => {
+                              setTempDateRange(range)
+                              if (range?.from || range?.to) {
+                                setIsCustomDateRange(true)
+                              }
+                            }}
+                            numberOfMonths={2}
+                            className={cn("p-0 pointer-events-auto")}
+                          />
+                        </div>
+                        
+                        {/* OK and Cancel buttons */}
+                        <div className="flex gap-2 mt-4 pt-4 border-t border-border">
                           <Button
-                            key={period}
-                            variant={!isCustomDateRange && selectedPreset === period ? "default" : "ghost"}
                             size="sm"
                             onClick={() => {
-                              setSelectedPreset(period)
-                              setIsCustomDateRange(false)
-                              setTempDateRange(undefined)
-                              setDateRange(undefined)
+                              if (tempDateRange?.from && tempDateRange?.to) {
+                                // Apply custom date range
+                                setDateRange(tempDateRange)
+                                setIsCustomDateRange(true)
+                              } else if (selectedPreset !== selectedPeriod) {
+                                // Apply preset selection
+                                setSelectedPeriod(selectedPreset)
+                                setIsCustomDateRange(false)
+                                setDateRange(undefined)
+                                setTempDateRange(undefined)
+                              }
+                              setIsPopoverOpen(false)
                             }}
-                            className={cn(
-                              "w-full justify-start text-left font-normal",
-                              !isCustomDateRange && selectedPreset === period && "bg-primary text-primary-foreground"
-                            )}
+                            disabled={!((tempDateRange?.from && tempDateRange?.to) || (selectedPreset !== selectedPeriod))}
+                            className="flex-1"
                           >
-                            {period === '1d' ? '1D' :
-                             period === '1w' ? '1W' : 
-                             period === '1m' ? '1M' : 
-                             period === '3m' ? '3M' : 
-                             period === '6m' ? '6M' : 
-                             period === 'ytd' ? 'YTD' :
-                             period === 'lastyear' ? 'Last Year' : period}
+                            OK
                           </Button>
-                        ))}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setTempDateRange(undefined)
+                            }}
+                            className="flex-1"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
                       </div>
                       
-                      <div className="border-t border-border pt-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setDateRange(undefined)
-                            setTempDateRange(undefined)
-                            setIsCustomDateRange(false)
-                            setSelectedPeriod('ytd')
-                            setSelectedPreset('ytd')
-                          }}
-                          className="w-full justify-start text-left font-normal text-destructive"
-                        >
-                          Clear selection
-                        </Button>
+                      {/* Preset Options */}
+                      <div className="w-48 p-4 space-y-2">
+                        <div className="space-y-1">
+                          {(['1d', '1w', '1m', '3m', '6m', 'ytd', 'lastyear'] as TimePeriod[]).map((period) => (
+                            <Button
+                              key={period}
+                              variant={!isCustomDateRange && selectedPreset === period ? "default" : "ghost"}
+                              size="sm"
+                              onClick={() => {
+                                setSelectedPreset(period)
+                                setIsCustomDateRange(false)
+                                setTempDateRange(undefined)
+                                setDateRange(undefined)
+                              }}
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !isCustomDateRange && selectedPreset === period && "bg-primary text-primary-foreground"
+                              )}
+                            >
+                              {period === '1d' ? '1D' :
+                               period === '1w' ? '1W' : 
+                               period === '1m' ? '1M' : 
+                               period === '3m' ? '3M' : 
+                               period === '6m' ? '6M' : 
+                               period === 'ytd' ? 'YTD' :
+                               period === 'lastyear' ? 'Last Year' : period}
+                            </Button>
+                          ))}
+                        </div>
+                        
+                        <div className="border-t border-border pt-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setDateRange(undefined)
+                              setTempDateRange(undefined)
+                              setIsCustomDateRange(false)
+                              setSelectedPeriod('ytd')
+                              setSelectedPreset('ytd')
+                            }}
+                            className="w-full justify-start text-left font-normal text-destructive"
+                          >
+                            Clear selection
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-            )}
+                  </PopoverContent>
+                </Popover>
+              )}
+            </div>
           </div>
-        </CardHeader>
+        </div>
+
+        {/* Charts Grid - Side by side on desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mx-6 lg:mx-0">
+          {/* Profit Chart */}
+          <Card className="bg-gradient-card shadow-card border-border">
+            <CardHeader className="space-y-1 pb-3 lg:pb-4 px-3 sm:px-4 lg:px-6">
+              <CardTitle className="text-base lg:text-lg text-foreground">Profit Overview</CardTitle>
+            </CardHeader>
         <CardContent className="px-2 sm:px-3 lg:px-6">
           <div className="h-[180px] sm:h-[220px] lg:h-[280px] w-full overflow-hidden">
             {chartData && chartData.length > 0 ? (
@@ -1110,25 +1115,8 @@ export default function Dashboard() {
 
       {/* Sales Chart */}
       <Card className="bg-gradient-card shadow-card border-border">
-        <CardHeader className="space-y-3 pb-3 lg:pb-4 px-3 sm:px-4 lg:px-6">
+        <CardHeader className="space-y-1 pb-3 lg:pb-4 px-3 sm:px-4 lg:px-6">
           <CardTitle className="text-base lg:text-lg text-foreground">Sales Overview</CardTitle>
-          
-          {/* Date info - shows the same selected range */}
-          <div className="flex items-center gap-2">
-            <div className="text-sm text-muted-foreground">
-              <CalendarIcon className="inline-block mr-1 h-3 w-3" />
-              {isCustomDateRange && dateRange?.from && dateRange?.to 
-                ? `${format(dateRange.from, "MMM d")} ~ ${format(dateRange.to, "MMM d, yyyy")}`
-                : selectedPeriod === '1d' ? 'Last 1 Day' :
-                  selectedPeriod === '1w' ? 'Last 1 Week' : 
-                  selectedPeriod === '1m' ? 'Last 1 Month' : 
-                  selectedPeriod === '3m' ? 'Last 3 Months' : 
-                  selectedPeriod === '6m' ? 'Last 6 Months' : 
-                  selectedPeriod === 'ytd' ? 'Year to Date' :
-                  selectedPeriod === 'lastyear' ? 'Last Year' : 'Select period'
-              }
-            </div>
-          </div>
         </CardHeader>
         <CardContent className="px-2 sm:px-3 lg:px-6">
           <div className="h-[180px] sm:h-[220px] lg:h-[280px] w-full overflow-hidden">
@@ -1365,142 +1353,147 @@ export default function Dashboard() {
 
       {/* Mobile Layout - Charts first, then cards */}
       <div className="block sm:hidden space-y-4">
+        {/* Date Range Picker - Above both charts on mobile */}
+        <div className="mx-4 mb-4">
+          <div className="flex items-center gap-3">
+            <h3 className="text-lg font-semibold text-foreground">Analytics Overview</h3>
+            <div className="flex-1">
+              <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+                <DrawerTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "justify-start text-left font-normal w-full",
+                      (!dateRange && !selectedPeriod) && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {isCustomDateRange && dateRange?.from && dateRange?.to 
+                      ? `${format(dateRange.from, "MMM d")} ~ ${format(dateRange.to, "MMM d, yyyy")}`
+                      : selectedPeriod === '1d' ? 'Last 1 Day' :
+                        selectedPeriod === '1w' ? 'Last 1 Week' : 
+                        selectedPeriod === '1m' ? 'Last 1 Month' : 
+                        selectedPeriod === '3m' ? 'Last 3 Months' : 
+                        selectedPeriod === '6m' ? 'Last 6 Months' : 
+                        selectedPeriod === 'ytd' ? 'Year to Date' :
+                        selectedPeriod === 'lastyear' ? 'Last Year' : 'Select period'
+                    }
+                  </Button>
+                </DrawerTrigger>
+                <DrawerContent className="max-h-[90vh]">
+                  <DrawerHeader>
+                    <DrawerTitle>Select Date Range</DrawerTitle>
+                  </DrawerHeader>
+                  
+                  <div className="px-4 pb-4 space-y-6 overflow-y-auto">
+                    {/* Preset Options - Mobile First */}
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-medium text-muted-foreground">Quick Presets</h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        {(['1d', '1w', '1m', '3m', '6m', 'ytd', 'lastyear'] as TimePeriod[]).map((period) => (
+                          <Button
+                            key={period}
+                            variant={!isCustomDateRange && selectedPreset === period ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => {
+                              setSelectedPreset(period)
+                              setIsCustomDateRange(false)
+                              setTempDateRange(undefined)
+                              setDateRange(undefined)
+                            }}
+                            className="h-12 text-center"
+                          >
+                            {period === '1d' ? '1 Day' :
+                             period === '1w' ? '1 Week' : 
+                             period === '1m' ? '1 Month' : 
+                             period === '3m' ? '3 Months' : 
+                             period === '6m' ? '6 Months' : 
+                             period === 'ytd' ? 'Year to Date' :
+                             period === 'lastyear' ? 'Last Year' : period}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Custom Date Range */}
+                    <div className="space-y-3 border-t border-border pt-4">
+                      <h4 className="text-sm font-medium text-muted-foreground">Custom Date Range</h4>
+                      <Calendar
+                        mode="range"
+                        selected={tempDateRange}
+                        onSelect={(range) => {
+                          setTempDateRange(range)
+                          if (range?.from || range?.to) {
+                            setIsCustomDateRange(true)
+                          }
+                        }}
+                        numberOfMonths={1}
+                        className={cn("w-full pointer-events-auto")}
+                      />
+                    </div>
+                  </div>
+
+                  <DrawerFooter className="px-4 pb-6">
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => {
+                          if (tempDateRange?.from && tempDateRange?.to) {
+                            // Apply custom date range
+                            setDateRange(tempDateRange)
+                            setIsCustomDateRange(true)
+                          } else if (selectedPreset !== selectedPeriod) {
+                            // Apply preset selection
+                            setSelectedPeriod(selectedPreset)
+                            setIsCustomDateRange(false)
+                            setDateRange(undefined)
+                            setTempDateRange(undefined)
+                          }
+                          setIsDrawerOpen(false)
+                        }}
+                        disabled={!((tempDateRange?.from && tempDateRange?.to) || (selectedPreset !== selectedPeriod))}
+                        className="flex-1"
+                      >
+                        Apply
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setTempDateRange(undefined)
+                          setIsDrawerOpen(false)
+                        }}
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setDateRange(undefined)
+                        setTempDateRange(undefined)
+                        setIsCustomDateRange(false)
+                        setSelectedPeriod('ytd')
+                        setSelectedPreset('ytd')
+                        setIsDrawerOpen(false)
+                      }}
+                      className="text-destructive"
+                    >
+                      Clear selection
+                    </Button>
+                  </DrawerFooter>
+                </DrawerContent>
+              </Drawer>
+            </div>
+          </div>
+        </div>
+        
         {/* Charts Grid - Stacked on mobile */}
         <div className="grid grid-cols-1 gap-4 mx-4">
           {/* Profit Chart */}
           <Card className="bg-gradient-card shadow-card border-border">
-            <CardHeader className="space-y-3 pb-3 px-3">
+            <CardHeader className="space-y-1 pb-3 px-3">
               <CardTitle className="text-base text-foreground">Profit Overview</CardTitle>
-              
-              {/* Date Range Picker - Mobile */}
-              <div className="flex items-center gap-2">
-                <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-                  <DrawerTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "justify-start text-left font-normal w-full",
-                        (!dateRange && !selectedPeriod) && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {isCustomDateRange && dateRange?.from && dateRange?.to 
-                        ? `${format(dateRange.from, "MMM d")} ~ ${format(dateRange.to, "MMM d, yyyy")}`
-                        : selectedPeriod === '1d' ? 'Last 1 Day' :
-                          selectedPeriod === '1w' ? 'Last 1 Week' : 
-                          selectedPeriod === '1m' ? 'Last 1 Month' : 
-                          selectedPeriod === '3m' ? 'Last 3 Months' : 
-                          selectedPeriod === '6m' ? 'Last 6 Months' : 
-                          selectedPeriod === 'ytd' ? 'Year to Date' :
-                          selectedPeriod === 'lastyear' ? 'Last Year' : 'Select period'
-                      }
-                    </Button>
-                  </DrawerTrigger>
-                  <DrawerContent className="max-h-[90vh]">
-                    <DrawerHeader>
-                      <DrawerTitle>Select Date Range</DrawerTitle>
-                    </DrawerHeader>
-                    
-                    <div className="px-4 pb-4 space-y-6 overflow-y-auto">
-                      {/* Preset Options - Mobile First */}
-                      <div className="space-y-3">
-                        <h4 className="text-sm font-medium text-muted-foreground">Quick Presets</h4>
-                        <div className="grid grid-cols-2 gap-2">
-                          {(['1d', '1w', '1m', '3m', '6m', 'ytd', 'lastyear'] as TimePeriod[]).map((period) => (
-                            <Button
-                              key={period}
-                              variant={!isCustomDateRange && selectedPreset === period ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => {
-                                setSelectedPreset(period)
-                                setIsCustomDateRange(false)
-                                setTempDateRange(undefined)
-                                setDateRange(undefined)
-                              }}
-                              className="h-12 text-center"
-                            >
-                              {period === '1d' ? '1 Day' :
-                               period === '1w' ? '1 Week' : 
-                               period === '1m' ? '1 Month' : 
-                               period === '3m' ? '3 Months' : 
-                               period === '6m' ? '6 Months' : 
-                               period === 'ytd' ? 'Year to Date' :
-                               period === 'lastyear' ? 'Last Year' : period}
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Custom Date Range */}
-                      <div className="space-y-3 border-t border-border pt-4">
-                        <h4 className="text-sm font-medium text-muted-foreground">Custom Date Range</h4>
-                        <Calendar
-                          mode="range"
-                          selected={tempDateRange}
-                          onSelect={(range) => {
-                            setTempDateRange(range)
-                            if (range?.from || range?.to) {
-                              setIsCustomDateRange(true)
-                            }
-                          }}
-                          numberOfMonths={1}
-                          className={cn("w-full pointer-events-auto")}
-                        />
-                      </div>
-                    </div>
-
-                    <DrawerFooter className="px-4 pb-6">
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => {
-                            if (tempDateRange?.from && tempDateRange?.to) {
-                              // Apply custom date range
-                              setDateRange(tempDateRange)
-                              setIsCustomDateRange(true)
-                            } else if (selectedPreset !== selectedPeriod) {
-                              // Apply preset selection
-                              setSelectedPeriod(selectedPreset)
-                              setIsCustomDateRange(false)
-                              setDateRange(undefined)
-                              setTempDateRange(undefined)
-                            }
-                            setIsDrawerOpen(false)
-                          }}
-                          disabled={!((tempDateRange?.from && tempDateRange?.to) || (selectedPreset !== selectedPeriod))}
-                          className="flex-1"
-                        >
-                          Apply
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            setTempDateRange(undefined)
-                            setIsDrawerOpen(false)
-                          }}
-                          className="flex-1"
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setDateRange(undefined)
-                          setTempDateRange(undefined)
-                          setIsCustomDateRange(false)
-                          setSelectedPeriod('ytd')
-                          setSelectedPreset('ytd')
-                          setIsDrawerOpen(false)
-                        }}
-                        className="text-destructive"
-                      >
-                        Clear selection
-                      </Button>
-                    </DrawerFooter>
-                  </DrawerContent>
-                </Drawer>
-              </div>
             </CardHeader>
             <CardContent className="px-2">
               <div className="h-[180px] w-full overflow-hidden">
@@ -1575,25 +1568,8 @@ export default function Dashboard() {
 
           {/* Sales Chart */}
           <Card className="bg-gradient-card shadow-card border-border">
-            <CardHeader className="space-y-3 pb-3 px-3">
+            <CardHeader className="space-y-1 pb-3 px-3">
               <CardTitle className="text-base text-foreground">Sales Overview</CardTitle>
-              
-              {/* Date info - shows the same selected range */}
-              <div className="flex items-center gap-2">
-                <div className="text-sm text-muted-foreground">
-                  <CalendarIcon className="inline-block mr-1 h-3 w-3" />
-                  {isCustomDateRange && dateRange?.from && dateRange?.to 
-                    ? `${format(dateRange.from, "MMM d")} ~ ${format(dateRange.to, "MMM d, yyyy")}`
-                    : selectedPeriod === '1d' ? 'Last 1 Day' :
-                      selectedPeriod === '1w' ? 'Last 1 Week' : 
-                      selectedPeriod === '1m' ? 'Last 1 Month' : 
-                      selectedPeriod === '3m' ? 'Last 3 Months' : 
-                      selectedPeriod === '6m' ? 'Last 6 Months' : 
-                      selectedPeriod === 'ytd' ? 'Year to Date' :
-                      selectedPeriod === 'lastyear' ? 'Last Year' : 'Select period'
-                  }
-                </div>
-              </div>
             </CardHeader>
             <CardContent className="px-2">
               <div className="h-[180px] w-full overflow-hidden">
@@ -1669,25 +1645,7 @@ export default function Dashboard() {
 
         {/* Key Metrics Cards - After charts on mobile */}
         <div className="grid grid-cols-1 gap-3 mx-4">
-          {/* 1. Total Sales */}
-          <Card className="bg-gradient-card shadow-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-medium text-foreground">
-                Total Sales YTD
-              </CardTitle>
-              <DollarSign className="h-3 w-3 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-lg font-bold text-foreground">
-                ${metrics.totalSales.toLocaleString()}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Jan 1 - {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* 2. Monthly Sales */}
+          {/* 1. Monthly Sales */}
           <Card className="bg-gradient-card shadow-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs font-medium text-foreground">
@@ -1708,7 +1666,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* 3. Monthly ROI */}
+          {/* 2. Monthly ROI */}
           <Card className="bg-gradient-card shadow-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs font-medium text-foreground">
@@ -1729,7 +1687,25 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* 4. Total Profit */}
+          {/* 3. Total Sales YTD */}
+          <Card className="bg-gradient-card shadow-card border-border">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-medium text-foreground">
+                Total Sales YTD
+              </CardTitle>
+              <DollarSign className="h-3 w-3 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-lg font-bold text-foreground">
+                ${metrics.totalSales.toLocaleString()}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Jan 1 - {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* 4. Total Profit YTD */}
           <Card className="bg-gradient-card shadow-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs font-medium text-foreground">
@@ -1771,7 +1747,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* 6. Net Profit */}
+          {/* 6. Net Profit YTD */}
           <Card className="bg-gradient-card shadow-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs font-medium text-foreground">

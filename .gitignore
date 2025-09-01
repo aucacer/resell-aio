@@ -26,6 +26,7 @@ dist-ssr
 .cursor/
 .playwright-mcp/
 .mcp.json
+.bmad-core/
 docs/
 # Environment variables and secrets
 .env

@@ -1,7 +1,7 @@
 import { ReactNode } from "react"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "./AppSidebar"
-import resellaioLogoDark from "@/assets/resellaio-logo-dark.svg"
+import resellaioLogoWordmark from "@/assets/resellaio-final-logo-wordmark-dynamic.png"
 
 interface MainLayoutProps {
   children: ReactNode
@@ -17,7 +17,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             <div className="flex items-center gap-3">
               <SidebarTrigger />
               <img
-                src={resellaioLogoDark}
+                src={resellaioLogoWordmark}
                 alt="ResellAIO"
                 className="h-8 md:h-9 w-auto"
                 loading="eager"

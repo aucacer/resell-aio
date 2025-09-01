@@ -87,7 +87,7 @@ async function createProducts() {
     console.log('\n3. 🔗 Set up webhook endpoint in Stripe Dashboard:');
     console.log('   • Go to: https://dashboard.stripe.com/test/webhooks');
     console.log('   • Click "Add endpoint"');
-    console.log('   • URL: https://YOUR_PROJECT.supabase.co/functions/v1/stripe-webhook');
+    console.log('   • URL: https://tofckkpzdbcplxkgxcsr.supabase.co/functions/v1/stripe-webhook');
     console.log('   • Events to select:');
     console.log('     - checkout.session.completed');
     console.log('     - customer.subscription.created');
