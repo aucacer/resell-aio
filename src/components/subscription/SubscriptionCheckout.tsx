@@ -448,7 +448,7 @@ export function SubscriptionCheckout({ onSuccess, showCurrentPlan = true }: Subs
           : plans;
 
         return (
-          <div className={`grid grid-cols-1 gap-8 ${displayPlans.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}>
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
             {displayPlans.map((plan) => {
           const isCurrentPlan = plan.id === currentPlanId;
           const isPro = plan.id === 'pro_monthly';

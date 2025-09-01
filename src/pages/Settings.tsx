@@ -75,7 +75,7 @@ export default function Settings() {
   const { toast } = useToast()
   const isMobile = useIsMobile()
   const { user } = useAuth()
-  const { refreshSubscription } = useSubscriptionContext()
+  const { subscription, refreshSubscription } = useSubscriptionContext()
   const [searchParams, setSearchParams] = useSearchParams()
 
   // Manual refresh function
@@ -955,22 +955,26 @@ export default function Settings() {
       </div>
 
       {/* Subscription Management */}
-      <Card className="bg-card border-border">
-        <CardHeader>
-          <div>
-            <CardTitle className="flex items-center gap-2 text-card-foreground">
-              <DollarSign className="h-5 w-5 text-primary" />
-              Subscription & Billing
-            </CardTitle>
-            <CardDescription>
-              Manage your subscription, billing, and upgrade your plan
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <SubscriptionCheckout />
-        </CardContent>
-      </Card>
+      <div className="flex justify-start">
+        <div className="w-full max-w-4xl">
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <div>
+                <CardTitle className="flex items-center gap-2 text-card-foreground">
+                  <DollarSign className="h-5 w-5 text-primary" />
+                  Subscription & Billing
+                </CardTitle>
+                <CardDescription>
+                  Manage your subscription, billing, and upgrade your plan
+                </CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <SubscriptionCheckout />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       <div className="flex justify-start">
         <div className="w-full max-w-md">
