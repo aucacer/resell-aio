@@ -13,11 +13,11 @@ import {
   DrawerClose
 } from "@/components/ui/drawer"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { DollarSign, TrendingUp, Calculator, Award, CalendarIcon, Receipt, ArrowUp, ArrowDown, Percent, AlertTriangle, Clock } from "lucide-react"
+import { DollarSign, TrendingUp, Calculator, Award, CalendarIcon, Receipt, ArrowUp, ArrowDown, Percent, AlertTriangle, Clock, PieChartIcon } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { useAuth } from "@/contexts/AuthContext"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts"
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, PieChart, Pie } from "recharts"
 import { formatDateByLocation } from "@/lib/dateUtils"
 import { format, differenceInMonths } from "date-fns"
 import { useNavigate, useSearchParams } from "react-router-dom"
@@ -55,6 +55,7 @@ interface DashboardMetrics {
     totalProfit: number
     itemsSold: number
   }>
+  brandPieData: BrandPieChartData[]
 }
 
 interface ChartData {
@@ -65,6 +66,13 @@ interface ChartData {
 interface SalesChartData {
   date: string
   sales: number
+}
+
+interface BrandPieChartData {
+  brand: string
+  totalSales: number
+  percentage: number
+  fill: string
 }
 
 type TimePeriod = '1d' | '1w' | '1m' | '3m' | '6m' | 'ytd' | 'lastyear'
@@ -119,7 +127,8 @@ export default function Dashboard() {
     yearlyROIChange: null,
     agedStock: [],
     hasMoreAgedStock: false,
-    topBrands: []
+    topBrands: [],
+    brandPieData: []
   })
   const [loading, setLoading] = useState(true)
   const [chartData, setChartData] = useState<ChartData[]>([])
@@ -550,6 +559,32 @@ export default function Dashboard() {
           ]
         : [...top4Brands]
 
+      // Calculate pie chart data based on profit totals (matching Top Brands logic)
+      const totalBrandSales = topBrands.reduce((sum, brand) => {
+        return sum + brand.totalProfit
+      }, 0)
+
+      const gradientColors = ['#5DCEEF', '#4DA6E8', '#3D7FE0', '#2E59D9', '#1E3A8A']
+      
+      const brandPieData: BrandPieChartData[] = topBrands.map((brand, index) => {
+        const percentage = totalBrandSales > 0 ? (brand.totalProfit / totalBrandSales) * 100 : 0
+        
+        console.log(`Brand ${brand.brand}:`, {
+          totalProfit: brand.totalProfit,
+          percentage,
+          totalBrandSales
+        })
+        
+        return {
+          brand: brand.brand,
+          totalSales: brand.totalProfit, // Use profit as the sales value for consistency
+          percentage: Math.round(percentage * 10) / 10,
+          fill: brand.brand === 'Other' ? gradientColors[4] : gradientColors[index] || gradientColors[3]
+        }
+      })
+      
+      console.log('Final brandPieData:', brandPieData)
+
       // Process aged inventory items
       const processedAgedStock = agedInventory?.map(item => {
         const purchaseDate = new Date(item.purchase_date)
@@ -583,7 +618,8 @@ export default function Dashboard() {
         yearlyROIChange,
         agedStock: displayAgedStock,
         hasMoreAgedStock,
-        topBrands
+        topBrands,
+        brandPieData
       })
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
@@ -623,50 +659,8 @@ export default function Dashboard() {
       {/* Desktop Layout - Cards first, then charts */}
       <div className="hidden sm:block space-y-4 lg:space-y-6">
         {/* Key Metrics Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-7 gap-3 lg:gap-6 mx-6 lg:mx-0">
-          {/* 1. Monthly Sales */}
-          <Card className="bg-gradient-card shadow-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs lg:text-sm font-medium text-foreground">
-                Monthly Sales
-              </CardTitle>
-              <DollarSign className="h-3 w-3 lg:h-4 lg:w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-lg lg:text-2xl font-bold text-foreground">
-                ${metrics.monthlySales.toLocaleString()}
-              </div>
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">
-                  {new Date().toLocaleDateString('en-US', { month: 'short' })} Revenue
-                </p>
-                <PercentageIndicator change={metrics.monthlySalesChange} />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 2. Monthly ROI */}
-          <Card className="bg-gradient-card shadow-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs lg:text-sm font-medium text-foreground">
-                Monthly ROI
-              </CardTitle>
-              <Percent className="h-3 w-3 lg:h-4 lg:w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-lg lg:text-2xl font-bold text-foreground">
-                {metrics.monthlyROI.toFixed(1)}%
-              </div>
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">
-                  {new Date().toLocaleDateString('en-US', { month: 'short' })} Return
-                </p>
-                <PercentageIndicator change={metrics.monthlyROIChange} />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 3. Total Sales YTD */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6 mx-6 lg:mx-0">
+          {/* 1. Total Sales YTD */}
           <Card className="bg-gradient-card shadow-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs lg:text-sm font-medium text-foreground">
@@ -684,7 +678,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* 4. Total Profit YTD */}
+          {/* 2. Total Profit YTD */}
           <Card className="bg-gradient-card shadow-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs lg:text-sm font-medium text-foreground">
@@ -705,28 +699,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* 5. Monthly Expenses */}
-          <Card className="bg-gradient-card shadow-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs lg:text-sm font-medium text-foreground">
-                Monthly Expenses
-              </CardTitle>
-              <Receipt className="h-3 w-3 lg:h-4 lg:w-4 text-warning" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-lg lg:text-2xl font-bold text-foreground">
-                ${metrics.monthlyExpenses.toLocaleString()}
-              </div>
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">
-                  {new Date().toLocaleDateString('en-US', { month: 'short' })}
-                </p>
-                <PercentageIndicator change={metrics.monthlyExpensesChange} />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 6. Net Profit YTD */}
+          {/* 3. Net Profit YTD */}
           <Card className="bg-gradient-card shadow-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs lg:text-sm font-medium text-foreground">
@@ -747,7 +720,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* 7. Yearly ROI */}
+          {/* 4. Yearly ROI */}
           <Card className="bg-gradient-card shadow-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs lg:text-sm font-medium text-foreground">
@@ -1190,165 +1163,188 @@ export default function Dashboard() {
       </Card>
     </div>
 
-        {/* Aged Stock and Top Brands Grid - Side by side on desktop */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mx-6 lg:mx-0">
-        {/* Aged Stock */}
-        <Card className="bg-gradient-card shadow-card border-border">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-base lg:text-lg text-foreground flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 lg:h-5 lg:w-5 text-warning" />
-              Aged Stock Attention
-            </CardTitle>
-            <p className="text-xs lg:text-sm text-muted-foreground">
-              Items older than 10 months that need attention
-            </p>
-          </CardHeader>
-          <CardContent>
-            {metrics.agedStock.length > 0 ? (
-              <>
-                <div className="space-y-3">
-                  {metrics.agedStock.map((item) => (
-                    <div key={item.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 rounded-lg border border-border gap-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground truncate text-sm lg:text-base">{item.item_name}</p>
-                        <div className="flex items-center gap-1 text-xs lg:text-sm text-warning">
-                          <Clock className="h-3 w-3" />
-                          <span className="font-medium">{formatAge(item.age_months)} old</span>
-                        </div>
-                      </div>
-                      <div className="flex-shrink-0 text-right">
-                        <p className="text-xs text-muted-foreground">Cost</p>
-                        <p className="font-medium text-foreground text-sm lg:text-base">${item.purchase_price.toLocaleString()}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                {metrics.hasMoreAgedStock && (
-                  <Button 
-                    variant="outline" 
-                    className="w-full mt-4"
-                    onClick={() => navigate('/inventory?filter=aged')}
-                  >
-                    Show All Aged Stock
-                  </Button>
-                )}
-              </>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <AlertTriangle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">No aged stock items</p>
-                <p className="text-xs mt-1">All inventory is less than 10 months old</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Top Brands by Profit - Horizontal Bar Chart */}
-        {metrics.topBrands.length > 0 && (
-          <Card className="bg-gradient-card shadow-card border-border">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-base lg:text-lg text-foreground flex items-center gap-2">
-                <Award className="h-4 w-4 lg:h-5 lg:w-5 text-warning" />
-                Top Brands by Profit
-              </CardTitle>
-              <p className="text-xs lg:text-sm text-muted-foreground">
-                Leading brands this month
-              </p>
-            </CardHeader>
-            <CardContent className="px-3 sm:px-4 lg:px-6">
-              <div className="h-[280px] w-full">
-                <ChartContainer
-                  className="h-full w-full"
-                  config={{
-                    totalProfit: {
-                      label: "Profit",
-                      color: "hsl(var(--primary))",
-                    },
-                  }}
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={metrics.topBrands}
-                      layout="vertical"
-                      margin={{
-                        top: 5,
-                        right: 30,
-                        left: 60,
-                        bottom: 5,
+        {/* Top Brands Charts - 2-column on desktop */}
+        <div className="mx-6 lg:mx-0">
+          {metrics.topBrands.length > 0 && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Top Brands by Profit - Horizontal Bar Chart */}
+              <Card className="bg-gradient-card shadow-card border-border">
+                <CardHeader className="space-y-1">
+                  <CardTitle className="text-base lg:text-lg text-foreground flex items-center gap-2">
+                    <Award className="h-4 w-4 lg:h-5 lg:w-5 text-warning" />
+                    Top Brands by Profit
+                  </CardTitle>
+                  <p className="text-xs lg:text-sm text-muted-foreground">
+                    Leading brands this month
+                  </p>
+                </CardHeader>
+                <CardContent className="px-3 sm:px-4 lg:px-6">
+                  <div className="h-[280px] w-full">
+                    <ChartContainer
+                      className="h-full w-full"
+                      config={{
+                        totalProfit: {
+                          label: "Profit",
+                          color: "hsl(var(--primary))",
+                        },
                       }}
                     >
-                      <XAxis 
-                        type="number"
-                        domain={[0, 'auto']}
-                        tickLine={false}
-                        axisLine={false}
-                        tick={{ fontSize: 10, fill: "hsl(var(--foreground))" }}
-                        tickFormatter={(value) => `$${Number(value).toFixed(0)}`}
-                      />
-                      <YAxis
-                        dataKey="brand"
-                        type="category"
-                        tickLine={false}
-                        axisLine={false}
-                        tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }}
-                        width={55}
-                      />
-                      <ChartTooltip
-                        cursor={{ fill: 'transparent' }}
-                        content={
-                          <ChartTooltipContent 
-                            hideLabel
-                            formatter={(value) => `$${Number(value).toFixed(2)}`}
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={metrics.topBrands}
+                          layout="vertical"
+                          margin={{
+                            top: 5,
+                            right: 30,
+                            left: 60,
+                            bottom: 5,
+                          }}
+                        >
+                          <XAxis 
+                            type="number"
+                            domain={[0, 'auto']}
+                            tickLine={false}
+                            axisLine={false}
+                            tick={{ fontSize: 10, fill: "hsl(var(--foreground))" }}
+                            tickFormatter={(value) => `$${Number(value).toFixed(0)}`}
                           />
-                        }
-                      />
-                      <Bar 
-                        dataKey="totalProfit" 
-                        radius={[0, 6, 6, 0]}
-                        maxBarSize={35}
+                          <YAxis
+                            dataKey="brand"
+                            type="category"
+                            tickLine={false}
+                            axisLine={false}
+                            tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }}
+                            width={55}
+                          />
+                          <ChartTooltip
+                            cursor={{ fill: 'transparent' }}
+                            content={
+                              <ChartTooltipContent 
+                                hideLabel
+                                formatter={(value) => `$${Number(value).toFixed(2)}`}
+                              />
+                            }
+                          />
+                          <Bar 
+                            dataKey="totalProfit" 
+                            radius={[0, 6, 6, 0]}
+                            maxBarSize={35}
+                          >
+                            {metrics.topBrands.map((entry, index) => {
+                              // Define gradient of blue colors from light cyan to deep blue
+                              const gradientColors = [
+                                '#5DCEEF',  // Light cyan/blue (1st bar)
+                                '#4DA6E8',  // Medium cyan-blue (2nd bar)
+                                '#3D7FE0',  // Medium blue (3rd bar)
+                                '#2E59D9',  // Darker blue (4th bar)
+                                '#1E3A8A'   // Deep blue (5th bar - Other)
+                              ];
+                              
+                              // Use the "Other" color for the "Other" category, otherwise use index-based color
+                              const fillColor = entry.brand === 'Other' 
+                                ? gradientColors[4] 
+                                : gradientColors[index] || gradientColors[3];
+                              
+                              return (
+                                <Cell 
+                                  key={`cell-${index}`}
+                                  fill={fillColor}
+                                />
+                              );
+                            })}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
+                  </div>
+                  <div className="mt-4 space-y-1">
+                    <div className="flex items-center gap-2 text-xs">
+                      <Award className="h-3 w-3 text-warning" />
+                      <span className="font-medium text-foreground">
+                        {metrics.topBrands[0]?.brand || 'Top brand'} leads with ${metrics.topBrands[0]?.totalProfit.toLocaleString() || 0} in profit
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Total profit across top {metrics.topBrands.length} brands: ${metrics.topBrands.reduce((sum, brand) => sum + brand.totalProfit, 0).toLocaleString()}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Brand Distribution Pie Chart */}
+              {metrics.brandPieData.length > 0 && (
+                <Card className="bg-gradient-card shadow-card border-border">
+                  <CardHeader className="space-y-1">
+                    <CardTitle className="text-base lg:text-lg text-foreground flex items-center gap-2">
+                      <PieChartIcon className="h-4 w-4 lg:h-5 lg:w-5 text-warning" />
+                      Brand Distribution
+                    </CardTitle>
+                    <p className="text-xs lg:text-sm text-muted-foreground">
+                      Sales percentage by brand
+                    </p>
+                  </CardHeader>
+                  <CardContent className="px-3 sm:px-4 lg:px-6">
+                    <div className="h-[280px] w-full">
+                      <ChartContainer
+                        className="h-full w-full"
+                        config={{
+                          totalSales: {
+                            label: "Sales",
+                          },
+                        }}
                       >
-                        {metrics.topBrands.map((entry, index) => {
-                          // Define gradient of blue colors from light cyan to deep blue
-                          const gradientColors = [
-                            '#5DCEEF',  // Light cyan/blue (1st bar)
-                            '#4DA6E8',  // Medium cyan-blue (2nd bar)
-                            '#3D7FE0',  // Medium blue (3rd bar)
-                            '#2E59D9',  // Darker blue (4th bar)
-                            '#1E3A8A'   // Deep blue (5th bar - Other)
-                          ];
-                          
-                          // Use the "Other" color for the "Other" category, otherwise use index-based color
-                          const fillColor = entry.brand === 'Other' 
-                            ? gradientColors[4] 
-                            : gradientColors[index] || gradientColors[3];
-                          
-                          return (
-                            <Cell 
-                              key={`cell-${index}`}
-                              fill={fillColor}
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <ChartTooltip
+                              cursor={false}
+                              content={
+                                <ChartTooltipContent 
+                                  hideLabel
+                                  formatter={(value, name) => {
+                                    const data = metrics.brandPieData.find(item => item.brand === name)
+                                    return [`${data?.percentage || 0}%`, name]
+                                  }}
+                                />
+                              }
                             />
-                          );
-                        })}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </div>
-              <div className="mt-4 space-y-1">
-                <div className="flex items-center gap-2 text-xs">
-                  <Award className="h-3 w-3 text-warning" />
-                  <span className="font-medium text-foreground">
-                    {metrics.topBrands[0]?.brand || 'Top brand'} leads with ${metrics.topBrands[0]?.totalProfit.toLocaleString() || 0} in profit
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Total profit across top {metrics.topBrands.length} brands: ${metrics.topBrands.reduce((sum, brand) => sum + brand.totalProfit, 0).toLocaleString()}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+                            <Pie
+                              data={metrics.brandPieData}
+                              dataKey="totalSales"
+                              nameKey="brand"
+                              cx="50%"
+                              cy="50%"
+                              outerRadius={80}
+                              label={({ percentage }) => `${percentage}%`}
+                              labelLine={false}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </ChartContainer>
+                    </div>
+                    <div className="mt-4 space-y-2">
+                      <div className="flex flex-wrap gap-3">
+                        {metrics.brandPieData.map((entry) => (
+                          <div key={entry.brand} className="flex items-center gap-2">
+                            <div 
+                              className="w-3 h-3 rounded-sm"
+                              style={{ backgroundColor: entry.fill }}
+                            />
+                            <span className="text-xs text-muted-foreground">
+                              {entry.brand}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Total sales across {metrics.brandPieData.length} brands: ${metrics.brandPieData.reduce((sum, brand) => sum + (brand.totalSales || 0), 0).toLocaleString()}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+        </div>
     </div> {/* End desktop layout */}
 
       {/* Mobile Layout - Charts first, then cards */}
@@ -1645,49 +1641,7 @@ export default function Dashboard() {
 
         {/* Key Metrics Cards - After charts on mobile */}
         <div className="grid grid-cols-1 gap-3 mx-4">
-          {/* 1. Monthly Sales */}
-          <Card className="bg-gradient-card shadow-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-medium text-foreground">
-                Monthly Sales
-              </CardTitle>
-              <DollarSign className="h-3 w-3 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-lg font-bold text-foreground">
-                ${metrics.monthlySales.toLocaleString()}
-              </div>
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">
-                  {new Date().toLocaleDateString('en-US', { month: 'short' })} Revenue
-                </p>
-                <PercentageIndicator change={metrics.monthlySalesChange} />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 2. Monthly ROI */}
-          <Card className="bg-gradient-card shadow-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-medium text-foreground">
-                Monthly ROI
-              </CardTitle>
-              <Percent className="h-3 w-3 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-lg font-bold text-foreground">
-                {metrics.monthlyROI.toFixed(1)}%
-              </div>
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">
-                  {new Date().toLocaleDateString('en-US', { month: 'short' })} Return
-                </p>
-                <PercentageIndicator change={metrics.monthlyROIChange} />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 3. Total Sales YTD */}
+          {/* 1. Total Sales YTD */}
           <Card className="bg-gradient-card shadow-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs font-medium text-foreground">
@@ -1705,7 +1659,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* 4. Total Profit YTD */}
+          {/* 2. Total Profit YTD */}
           <Card className="bg-gradient-card shadow-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs font-medium text-foreground">
@@ -1726,28 +1680,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* 5. Monthly Expenses */}
-          <Card className="bg-gradient-card shadow-card border-border">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-medium text-foreground">
-                Monthly Expenses
-              </CardTitle>
-              <Receipt className="h-3 w-3 text-warning" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-lg font-bold text-foreground">
-                ${metrics.monthlyExpenses.toLocaleString()}
-              </div>
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">
-                  {new Date().toLocaleDateString('en-US', { month: 'short' })}
-                </p>
-                <PercentageIndicator change={metrics.monthlyExpensesChange} />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 6. Net Profit YTD */}
+          {/* 3. Net Profit YTD */}
           <Card className="bg-gradient-card shadow-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs font-medium text-foreground">
@@ -1768,7 +1701,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* 7. Yearly ROI */}
+          {/* 4. Yearly ROI */}
           <Card className="bg-gradient-card shadow-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs font-medium text-foreground">
@@ -1790,60 +1723,8 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Aged Stock and Top Brands - Stacked on mobile */}
-        <div className="grid grid-cols-1 gap-4 mx-4">
-          {/* Aged Stock */}
-          <Card className="bg-gradient-card shadow-card border-border">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-base text-foreground flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-warning" />
-                Aged Stock Attention
-              </CardTitle>
-              <p className="text-xs text-muted-foreground">
-                Items older than 10 months that need attention
-              </p>
-            </CardHeader>
-            <CardContent>
-              {metrics.agedStock.length > 0 ? (
-                <>
-                  <div className="space-y-3">
-                    {metrics.agedStock.map((item) => (
-                      <div key={item.id} className="flex flex-col p-3 rounded-lg border border-border gap-2">
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-foreground truncate text-sm">{item.item_name}</p>
-                          <div className="flex items-center gap-1 text-xs text-warning">
-                            <Clock className="h-3 w-3" />
-                            <span className="font-medium">{formatAge(item.age_months)} old</span>
-                          </div>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs text-muted-foreground">Cost</span>
-                          <p className="font-medium text-foreground text-sm">${item.purchase_price.toLocaleString()}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {metrics.hasMoreAgedStock && (
-                    <Button 
-                      variant="outline" 
-                      className="w-full mt-4"
-                      onClick={() => navigate('/inventory?filter=aged')}
-                    >
-                      Show All Aged Stock
-                    </Button>
-                  )}
-                </>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <AlertTriangle className="h-6 w-6 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">No aged stock items</p>
-                  <p className="text-xs mt-1">All inventory is less than 10 months old</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Top Brands by Profit - Mobile */}
+        {/* Top Brands by Profit - Mobile */}
+        <div className="mx-4">
           {metrics.topBrands.length > 0 && (
             <Card className="bg-gradient-card shadow-card border-border">
               <CardHeader className="space-y-1">
@@ -1941,6 +1822,80 @@ export default function Dashboard() {
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Total profit across top {metrics.topBrands.length} brands: ${metrics.topBrands.reduce((sum, brand) => sum + brand.totalProfit, 0).toLocaleString()}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Brand Distribution Pie Chart - Mobile */}
+        <div className="mx-4">
+          {metrics.brandPieData.length > 0 && (
+            <Card className="bg-gradient-card shadow-card border-border">
+              <CardHeader className="space-y-1">
+                <CardTitle className="text-base text-foreground flex items-center gap-2">
+                  <PieChartIcon className="h-4 w-4 text-warning" />
+                  Brand Distribution
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  Sales percentage by brand
+                </p>
+              </CardHeader>
+              <CardContent className="px-3">
+                <div className="h-[280px] w-full">
+                  <ChartContainer
+                    className="h-full w-full"
+                    config={{
+                      totalSales: {
+                        label: "Sales",
+                      },
+                    }}
+                  >
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <ChartTooltip
+                          cursor={false}
+                          content={
+                            <ChartTooltipContent 
+                              hideLabel
+                              formatter={(value, name) => {
+                                const data = metrics.brandPieData.find(item => item.brand === name)
+                                return [`${data?.percentage || 0}%`, name]
+                              }}
+                            />
+                          }
+                        />
+                        <Pie
+                          data={metrics.brandPieData}
+                          dataKey="totalSales"
+                          nameKey="brand"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          label={({ percentage }) => `${percentage}%`}
+                          labelLine={false}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+                </div>
+                <div className="mt-4 space-y-2">
+                  <div className="flex flex-wrap gap-3">
+                    {metrics.brandPieData.map((entry) => (
+                      <div key={entry.brand} className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-sm"
+                          style={{ backgroundColor: entry.fill }}
+                        />
+                        <span className="text-xs text-muted-foreground">
+                          {entry.brand}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Total sales across {metrics.brandPieData.length} brands: ${metrics.brandPieData.reduce((sum, brand) => sum + (brand.totalSales || 0), 0).toLocaleString()}
                   </p>
                 </div>
               </CardContent>

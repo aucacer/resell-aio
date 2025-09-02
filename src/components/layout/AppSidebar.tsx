@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom"
-import { LayoutDashboard, Package, ShoppingCart, Receipt, Settings, LogOut } from "lucide-react"
+import { LayoutDashboard, TrendingUp, Package, ShoppingCart, Receipt, Settings, LogOut } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -20,6 +20,7 @@ import resellaioIconDark from "@/assets/resellaio-icon-dark.svg"
 
 const navigationItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Insights", url: "/insights", icon: TrendingUp },
   { title: "Inventory", url: "/inventory", icon: Package },
   { title: "Sales", url: "/sales", icon: ShoppingCart },
   { title: "Expenses", url: "/expenses", icon: Receipt },

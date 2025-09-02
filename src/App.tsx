@@ -11,6 +11,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { SubscriptionGuard } from "@/components/subscription/SubscriptionGuard";
 import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
+import Insights from "./pages/Insights";
 import Inventory from "./pages/Inventory";
 import Sales from "./pages/Sales";
 import Expenses from "./pages/Expenses";
@@ -69,6 +70,7 @@ const App = () => (
                   <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
                   <Route path="/auth/confirm" element={<EmailConfirmation />} />
                   <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                  <Route path="/insights" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
                   <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
                   <Route path="/sales" element={<ProtectedRoute><Sales /></ProtectedRoute>} />
                   <Route path="/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />

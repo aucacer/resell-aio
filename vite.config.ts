@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 3000,
-    allowedHosts: ["ed5f07f3a10e.ngrok.app"],
+    allowedHosts: ["bd137457aa8c.ngrok.app"],
     headers: {
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       'Pragma': 'no-cache',

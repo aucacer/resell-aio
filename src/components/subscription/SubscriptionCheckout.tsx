@@ -398,24 +398,26 @@ export function SubscriptionCheckout({ onSuccess, showCurrentPlan = true }: Subs
                     )}
                   </div>
                   <div>
-                    <Button
-                      onClick={handleManageSubscription}
-                      variant="outline"
-                      disabled={loading === 'manage'}
-                      className="min-w-[140px]"
-                    >
-                      {loading === 'manage' ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Opening Portal...
-                        </>
-                      ) : (
-                        <>
-                          <CreditCard className="mr-2 h-4 w-4" />
-                          Manage Subscription
-                        </>
-                      )}
-                    </Button>
+                    {subscription.plan_id === 'pro_monthly' && (
+                      <Button
+                        onClick={handleManageSubscription}
+                        variant="outline"
+                        disabled={loading === 'manage'}
+                        className="min-w-[140px]"
+                      >
+                        {loading === 'manage' ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Opening Portal...
+                          </>
+                        ) : (
+                          <>
+                            <CreditCard className="mr-2 h-4 w-4" />
+                            Manage Subscription
+                          </>
+                        )}
+                      </Button>
+                    )}
                   </div>
                 </div>
               </CardContent>
